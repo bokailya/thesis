@@ -1,0 +1,6 @@
+venv/
+*.aux
+*.bbl
+*.blg
+*.log
+*.toc

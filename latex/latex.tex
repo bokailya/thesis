@@ -1,0 +1,81 @@
+\documentclass{article}
+
+% Russian language support
+\usepackage[T2A]{fontenc}
+\usepackage[russian]{babel}
+
+% Images support
+\usepackage{graphicx}
+
+% For code listings
+\usepackage{listings}
+
+% DeclareMathOperator support
+\usepackage{mathtools}
+
+\DeclareMathOperator{\sign}{sign}
+\DeclarePairedDelimiter{\abs}{\lvert}{\rvert}
+
+\graphicspath{{../images/}}
+
+\begin{document}
+\begin{titlepage}
+    \begin{center}
+        \textbf{МИНИСТЕРСТВО НАУКИ И ВЫСШЕГО ОБРАЗОВАНИЯ РОССИЙСКОЙ ФЕДЕРАЦИИ}
+
+        \textbf{
+            ФЕДЕРАЛЬНОЕ ГОСУДАРСТВЕННОЕ АВТОНОМНОЕ ОБРАЗОВАТЕЛЬНОЕ УЧРЕЖДЕНИЕ
+        }
+        \textbf{ВЫСШЕГО ОБРАЗОВАНИЯ}
+
+        \textbf{«БАЛТИЙСКИЙ ФЕДЕРАЛЬНЫЙ УНИВЕРСИТЕТ им. И. КАНТА»}
+
+        \textbf{
+            ИНСТИТУТ ФИЗИКО-МАТЕМАТИЧЕСКИХ НАУК И ИНФОРМАЦИОННЫХ ТЕХНОЛОГИЙ
+        }
+
+        \vspace{1.5cm}
+        Выпускная квалификационная работа
+
+        \textbf{
+            Тема:
+            «Численное моделирование эффекта "blow-up"
+            в обратной задаче для волнового уравнения»
+        }
+
+        \textbf{Направление подготовки:}
+        01.03.02: «Прикладная математика и информатика»
+    \begin{flushright}
+        \textbf{Выполнил:}
+
+        Студент 4 курса
+
+        \makebox[1in]{\hrulefill} Бока И. В.
+
+        \textbf{Руководитель:}
+
+        \makebox[1in]{\hrulefill} Пестов Л. Н.
+    \end{flushright}
+
+        \vfill
+        Калининград
+
+        2020
+    \end{center}
+\end{titlepage}
+
+\tableofcontents
+
+\input{sections/introduction.tex}
+
+\input{sections/numerical_solution_for_forward_problem.tex}
+
+\input{sections/inverse_problem.tex}
+
+\input{sections/conclusion.tex}
+
+\input{sections/annex.tex}
+
+\input{sections/bibliography.tex}
+
+\end{document}

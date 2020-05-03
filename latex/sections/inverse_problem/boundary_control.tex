@@ -1,0 +1,34 @@
+\subsection{Метод граничного управления}
+
+Рассмотрим обратную задачу для волнового уравнения.
+
+\begin{align*}
+    \frac{\partial^2 u}{\partial t^2}
+    &=
+    c^2
+    \left(
+    \frac{\partial^2 u}{\partial x_1^2}
+    + \frac{\partial^2 u}{\partial x_2^2}
+    + \cdots
+    + \frac{\partial^2 u}{\partial x_n^2}
+    \right)
+    ,
+    t \in \left( 0, T \right)
+    \\
+    u \left( \mathbf{x}, 0 \right) &= 0 \\
+    \frac{\partial u}{\partial t} \left( \mathbf{x}, 0 \right) &= 0 \\
+    u \left( \mathbf{x}, t \right)
+    &=
+    \phi \left( \mathbf{x}, t \right),
+    t \ \in \left( 0, T \right), x \in \partial \Omega
+    \\
+    \frac{\partial u}{\partial \mathbf{n}} \left( \mathbf{x}, t \right)
+    &=
+    f \left( \mathbf{x} \right)
+    ,
+    x \in \partial \Omega
+\end{align*}
+
+Обратная задача граничного управления состоит в
+отыскании функции \( f \left( \mathbf{x} \right) \),
+зная функию \( \phi \left( \mathbf{x} \right) \).
