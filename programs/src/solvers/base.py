@@ -1,11 +1,17 @@
 """Common settings and functions"""
-import numpy as np
+from pathlib import Path
 
-from .constants import (
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.animation import FFMpegWriter
+
+from constants import (
     DELTA_T,
     HALF_MAX_ACCURACY,
     PERFECT_MATCHED_LAYER_SIZE_X,
     PERFECT_MATCHED_LAYER_SIZE_Y,
+    X_LENGTH,
+    Y_LENGTH,
 )
 
 
@@ -101,6 +107,27 @@ def in_circle(x: float, y: float, x0: float, y0: float, radius: float) -> bool:
     return (x - x0)**2 + (y - y0)**2 < radius**2
 
 
+def perfect_matched_layer_save_pressure(
+    pressure_x: np.ndarray,
+    pressure_y: np.ndarray,
+    filename: str,
+) -> None:
+    plt.imshow(
+        (
+            pressure_x + pressure_y
+        )[
+            PERFECT_MATCHED_LAYER_SIZE_X:-PERFECT_MATCHED_LAYER_SIZE_X,
+            PERFECT_MATCHED_LAYER_SIZE_Y:-PERFECT_MATCHED_LAYER_SIZE_Y,
+        ],
+        vmin=-1,
+        vmax=1,
+        extent=[0, X_LENGTH, 0, Y_LENGTH],
+    )
+    plt.xlabel('x')
+    plt.ylabel('y')
+    plt.savefig(Path('..') / 'images' / f'{filename}.png')
+
+
 def perfect_matched_layer_x(data: np.ndarray, sigma_max: int):
     for i in range(PERFECT_MATCHED_LAYER_SIZE_X):
         coefficient = 1 - DELTA_T * sigma_max * (
@@ -117,3 +144,31 @@ def perfect_matched_layer_y(data: np.ndarray, sigma_max: int):
         )
         data[:, i] *= coefficient
         data[:, -i - 1] *= coefficient
+
+
+def save_pressure(pressure: np.ndarray, filename: str) -> None:
+    plt.imshow(X=pressure, extent=[0, X_LENGTH, 0, Y_LENGTH])
+    plt.xlabel('x')
+    plt.ylabel('y')
+    plt.savefig(Path('..') / 'images' / f'{filename}.png')
+
+
+def update_frame(
+    pressure_x: np.ndarray,
+    pressure_y: np.ndarray,
+    writer: FFMpegWriter,
+) -> None:
+    plt.imshow(
+        (
+            pressure_x + pressure_y
+        )[
+            PERFECT_MATCHED_LAYER_SIZE_X:-PERFECT_MATCHED_LAYER_SIZE_X,
+            PERFECT_MATCHED_LAYER_SIZE_Y:-PERFECT_MATCHED_LAYER_SIZE_Y,
+        ],
+        vmin=-1,
+        vmax=1,
+        extent=[0, X_LENGTH, 0, Y_LENGTH],
+    )
+    plt.xlabel('x')
+    plt.ylabel('y')
+    writer.grab_frame()

@@ -1,6 +1,7 @@
-venv/
 *.aux
 *.bbl
 *.blg
 *.log
 *.toc
+.mypy_cache
+venv/

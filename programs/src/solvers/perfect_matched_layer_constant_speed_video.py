@@ -5,9 +5,9 @@ and save animation
 """
 from pathlib import Path
 
+import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.animation import FFMpegWriter
-import matplotlib.pyplot as plt
 
 from .base import (
     derivative_x,
@@ -15,17 +15,24 @@ from .base import (
     in_circle,
     perfect_matched_layer_x,
     perfect_matched_layer_y,
+    update_frame,
 )
-from .constants import (
+from constants import (
     C,
     DELTA_T,
     DELTA_X,
     DELTA_Y,
+    DPI,
+    FPS,
     N,
     PERFECT_MATCHED_LAYER_SIZE_X,
     PERFECT_MATCHED_LAYER_SIZE_Y,
-    X_LENGTH,
-    Y_LENGTH,
+    RHO,
+    SIGMA_X_MAX,
+    SIGMA_X_STAR_MAX,
+    SIGMA_Y_MAX,
+    SIGMA_Y_STAR_MAX,
+    T,
 )
 
 
@@ -33,35 +40,8 @@ RESULT_FILENAME: str = 'perfect_matched_layer_constant_speed'
 FILE_PATH: Path = Path(
     '..'
 ) / 'videos' / f'{RESULT_FILENAME}.mp4'
-FPS: int = 30
-DPI: int = 100
-
-RHO: int = 1
-T: float = 0.5
-PERFECT_MATCHED_LAYER_WIDTH: float = 0.2
-
-SIGMA_X_MAX: int = 1000
-SIGMA_X_STAR_MAX: int = 1000
-SIGMA_Y_MAX: int = 1000
-SIGMA_Y_STAR_MAX: int = 1000
 
 writer = FFMpegWriter(FPS)
-
-
-def save_pressure(pressure_x: np.ndarray, pressure_y: np.ndarray) -> None:
-    plt.imshow(
-        (
-            pressure_x + pressure_y
-        )[
-            PERFECT_MATCHED_LAYER_SIZE_X:-PERFECT_MATCHED_LAYER_SIZE_X,
-            PERFECT_MATCHED_LAYER_SIZE_Y:-PERFECT_MATCHED_LAYER_SIZE_Y,
-        ],
-        vmin=-1,
-        vmax=1,
-        extent=[0, X_LENGTH, 0, Y_LENGTH],
-    )
-    plt.xlabel('x')
-    plt.ylabel('y')
 
 
 def update_perfect_matched_layer(
@@ -120,7 +100,7 @@ def main() -> None:
 
     fig = plt.figure()
     with writer.saving(fig, FILE_PATH, DPI):
-        save_pressure(pressure_x, pressure_y)
+        update_frame(pressure_x, pressure_y)
         writer.grab_frame()
 
         velocity_x = np.zeros((pressure_x.shape[0] - 1, pressure_x.shape[1]))
@@ -135,8 +115,7 @@ def main() -> None:
                 pressure_coefficient,
                 velocity_coefficient,
             )
-            save_pressure(pressure_x, pressure_y)
-            writer.grab_frame()
+            update_frame(pressure_x, pressure_y, writer)
 
 
 if __name__ == '__main__':
