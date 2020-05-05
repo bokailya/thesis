@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.animation import FFMpegWriter
 
-from .base import (
+from solvers.base import (
     derivative_x,
     derivative_y,
     in_circle,

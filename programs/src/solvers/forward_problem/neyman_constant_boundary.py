@@ -6,7 +6,7 @@ and save image of result
 """
 import numpy as np
 
-from .base import derivative_x, derivative_y, save_pressure
+from solvers.base import derivative_x, derivative_y, save_pressure
 from constants import C, DELTA_T, DELTA_X, DELTA_Y, N, RHO, T
 
 
