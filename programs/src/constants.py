@@ -41,11 +41,15 @@ PERFECT_MATCHED_LAYER_SIZE_Y: int = round(
     PERFECT_MATCHED_LAYER_WIDTH / DELTA_Y
 )
 
+RHO: int = 1
+PRESSURE_COEFFICIENT: float = -DELTA_T * RHO * C**2 / DELTA_X
+
 # Other Perfect Matched Layer parameters
 SIGMA_X_MAX: int = 1000
 SIGMA_X_STAR_MAX: int = 1000
 SIGMA_Y_MAX: int = 1000
 SIGMA_Y_STAR_MAX: int = 1000
 
-RHO: int = 1
 T: float = 0.5
+
+VELOCITY_COEFFICIENT: float = -DELTA_T / (DELTA_X * RHO)
