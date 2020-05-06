@@ -1,10 +1,10 @@
 #!/usr/bin/env python
-"""Solve numerically forward problem for wave equation
-with constant Neuman boundary condition
-using Finite-Difference Time-Domain method
-and save image of result
 """
-from typing import List, Tuple
+Solve numerically boundary control problem for wave equation
+with Neuman boundary condition and save image of result.
+For forward problem used Finite-Difference Time-Domain method.
+"""
+from typing import Tuple
 
 import numpy as np
 
@@ -21,14 +21,19 @@ from constants import (
     PRESSURE_COEFFICIENT,
     T,
     VELOCITY_COEFFICIENT,
+    X_LENGTH,
+    Y_LENGTH,
 )
 
 
 NUMBER_OF_TIME_STEPS: int = round((2 * T) / DELTA_T)
 
+TARGET_POINT: np.ndarray = np.array([0.5, 0.5])
+
 
 def build_border(edge_index: int, border_value: np.ndarray) -> np.ndarray:
-    """Construct border
+    """
+    Construct border
     with border_value on one of the edges and zero value on others
 
     Args:
@@ -54,31 +59,107 @@ def build_border(edge_index: int, border_value: np.ndarray) -> np.ndarray:
     )
 
 
-def build_system_of_linear_equations(
-    pressure_coefficient: float,
-    velocity_coefficient: float,
-) -> Tuple[np.ndarray, np.ndarray]:
+def build_system_of_linear_equations() -> Tuple[np.ndarray, np.ndarray]:
     """Build system of linear equations for boundary control problem"""
+
+    borders, int_borders, solutions, int_solutions = solve_for_basis_borders()
+    even_borders: np.ndarray = (borders + np.flip(borders, 1)) / 2
+    even_solutions: np.ndarray = (solutions + np.flip(solutions, 1)) / 2
 
     system_matrix: np.ndarray = np.zeros(
         (NUMBER_OF_BASIS_FUNCTIONS, NUMBER_OF_BASIS_FUNCTIONS),
     )
 
-    borders, int_borders, solutions, int_solutions = solve_for_basis_borders()
+    for i in range(NUMBER_OF_BASIS_FUNCTIONS):
+        for j in range(NUMBER_OF_BASIS_FUNCTIONS):
+            system_matrix[i, j] = sum(
+                np.trapz(
+                    dx=DELTA_Y if edge_index < 2 else DELTA_X,
+                    y=np.trapz(
+                        axis=0,
+                        dx=DELTA_T,
+                        y=(
+                            even_solutions[j, :, edge_index]
+                            * int_borders[i, :, edge_index]
+                            - even_borders[j, :, edge_index]
+                            * int_solutions[i, :, edge_index]
+                        ),
+                    ),
+                )
+                for edge_index in range(NUMBER_OF_BORDERS)
+            )
+
+    system_right_hand_side_vector: np.ndarray = np.zeros(
+        (NUMBER_OF_BASIS_FUNCTIONS, 1),
+    )
+
+    x_variable: np.ndarray = np.linspace(0, X_LENGTH, N)
+    y_variable: np.ndarray = np.linspace(0, Y_LENGTH, N)
+
+    target: np.ndarray = np.array(
+        [
+            target_function(np.array(0), y_variable),
+            target_function(np.array(Y_LENGTH), y_variable),
+            target_function(x_variable, np.array(0)),
+            target_function(x_variable, np.array(X_LENGTH)),
+        ],
+    )
+    target_normal_derivative: np.ndarray = np.array(
+        [
+            target_function(np.array(0), y_variable),
+            target_function(np.array(Y_LENGTH), y_variable),
+            target_function(x_variable, np.array(0)),
+            target_function(x_variable, np.array(X_LENGTH)),
+        ],
+    )
+    for i in range(NUMBER_OF_BASIS_FUNCTIONS):
+        system_right_hand_side_vector[i] = sum(
+            np.trapz(
+                dx=DELTA_Y if edge_index < 2 else DELTA_X,
+                y=(
+                    np.trapz(
+                        axis=0,
+                        dx=DELTA_T,
+                        y=int_borders[i, :, edge_index],
+                    )
+                    * target[edge_index]
+                    - np.trapz(
+                        axis=0,
+                        dx=DELTA_T,
+                        y=int_solutions[i, :, edge_index],
+                    )
+                    * target_normal_derivative
+                )
+            )
+            for edge_index in range(NUMBER_OF_BORDERS)
+        )
+
+    return system_matrix, system_right_hand_side_vector
 
 
 def main() -> None:
+    """
+    Solve numerically boundary control problem for wave equation
+    with Neuman boundary condition and save image of result.
+    For forward problem used Finite-Difference Time-Domain method.
 
+    Args:
+        None
+
+    Returns:
+        None
+    """
     build_system_of_linear_equations()
 
 
 def solve_for_basis_borders() -> Tuple[
-        List[np.ndarray],
-        List[np.ndarray],
-        List[np.ndarray],
-        List[np.ndarray],
+        np.ndarray,
+        np.ndarray,
+        np.ndarray,
+        np.ndarray,
 ]:
-    """Solve forward problem for basis functions
+    """
+    Solve forward problem for basis functions
 
     Args:
         None
@@ -93,10 +174,19 @@ def solve_for_basis_borders() -> Tuple[
         solution at the border for basis Neuman border functions
         integrated by time
     """
-    basis_borders: List[np.ndarray] = []
-    integrated_basis_borders: List[np.ndarray] = []
-    solution_for_basis_borders: List[np.ndarray] = []
-    integrated_solution_for_basis_borders: List[np.ndarray] = []
+    basis_borders: np.ndarray = np.zeros(
+        (
+            NUMBER_OF_BASIS_FUNCTIONS,
+            NUMBER_OF_TIME_STEPS,
+            NUMBER_OF_BORDERS,
+            N,
+        ),
+    )
+    integrated_basis_borders: np.ndarray = basis_borders.copy()
+    solution_for_basis_borders: np.ndarray = basis_borders.copy()
+    integrated_solution_for_basis_borders: np.ndarray = basis_borders.copy()
+
+    basis_function_index: int = 0
 
     for border_index in range(NUMBER_OF_BORDERS):
         for basis_function_space_index in range(
@@ -111,46 +201,43 @@ def solve_for_basis_borders() -> Tuple[
                     * np.linspace(0, 1, N),
                 )[np.newaxis]
 
-                basis_borders.append(
-                    build_border(
-                        border_index,
-                        np.sin(
+                basis_borders[basis_function_index] = build_border(
+                    border_index,
+                    np.sin(
+                        np.pi
+                        * basis_function_time_index
+                        * np.arange(0, DELTA_T, NUMBER_OF_TIME_STEPS)
+                        / T
+                    )[:, np.newaxis]
+                    @ basis_function_space,
+                )
+
+                integrated_basis_borders[basis_function_index] = build_border(
+                    border_index,
+                    T
+                    / (np.pi * basis_function_time_index)
+                    * (
+                        1
+                        - np.cos(
                             np.pi
                             * basis_function_time_index
                             * np.arange(0, DELTA_T, NUMBER_OF_TIME_STEPS)
                             / T
-                        )[:, np.newaxis]
-                        @ basis_function_space,
-                    ),
+                        )
+                    )[:, np.newaxis]
+                    @ basis_function_space,
                 )
 
-                integrated_basis_borders.append(
-                    build_border(
-                        border_index,
-                        T / (
-                            np.pi
-                            * basis_function_time_index
-                        ) * (
-                            1
-                            - np.cos(
-                                np.pi
-                                * basis_function_time_index
-                                * np.arange(0, DELTA_T, NUMBER_OF_TIME_STEPS)
-                                / T
-                            )
-                        )[:, np.newaxis],
-                    ),
-                )
+                solution_for_basis_borders[
+                    basis_function_index,
+                ] = solve_forward_problem(basis_borders[-1])
 
-                solution_for_basis_borders.append(
-                    solve_forward_problem(basis_borders[-1]),
-                )
-                integrated_solution_for_basis_borders.append(
-                    solve_forward_problem(integrated_basis_borders[-1]),
-                )
+                integrated_solution_for_basis_borders[
+                    basis_function_index,
+                ] = solve_forward_problem(integrated_basis_borders[-1])
 
 
-def solve_forward_problem(borders: np.ndarray) -> List[List[np.ndarray]]:
+def solve_forward_problem(borders: np.ndarray) -> np.ndarray:
     pressure: np.ndarray = np.zeros((N + 2, N + 2))
 
     velocity_x: np.ndarray = np.zeros(
@@ -160,15 +247,33 @@ def solve_forward_problem(borders: np.ndarray) -> List[List[np.ndarray]]:
         (pressure.shape[0], pressure.shape[1] - 1),
     )
 
-    solution_border = []
+    solution_border: np.ndarray = np.zeros(
+        (NUMBER_OF_TIME_STEPS, NUMBER_OF_BORDERS, N),
+    )
 
     for time_index in range(NUMBER_OF_TIME_STEPS):
         update_neyman(pressure, velocity_x, velocity_y, borders[time_index])
-        solution_border.append(
-            [pressure[1], pressure[-2], pressure[:, 1], pressure[:, -2]],
-        )
+        solution_border[time_index] = [
+            pressure[1],
+            pressure[-2],
+            pressure[:, 1].transpose(),
+            pressure[:, -2].transpose(),
+        ]
 
     return solution_border
+
+
+def target_function(x: np.ndarray, y: np.ndarray):
+    """
+    Target value for wave function u(., T)
+
+    Args:
+        Array of x coordinates
+
+    Returns:
+        Target function values
+    """
+    return np.log(np.sqrt((x - TARGET_POINT[0])**2 + (y - TARGET_POINT[1])**2))
 
 
 def update_neyman(
