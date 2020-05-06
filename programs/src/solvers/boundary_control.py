@@ -88,9 +88,11 @@ def build_boundary_control() -> np.ndarray:
 
 
 def build_system_of_linear_equations(
+    # pylint: disable=bad-continuation
     basis_boundaries: np.ndarray,
     basis_solutions: np.ndarray,
 ) -> Tuple[np.ndarray, np.ndarray]:
+    # pylint: enable=bad-continuation
     """
     Build system of linear equations for boundary control problem
 
@@ -428,10 +430,10 @@ def update_neyman(
     ]
     pressure[1:-1, 0] = pressure[1:-1, 1] - 2 * DELTA_Y * boundaries[
         BoundaryIndex.MINIMAL_Y.value,
-    ][:, np.newaxis]
+    ]
     pressure[1:-1, -1] = pressure[1:-1, -2] - 2 * DELTA_Y * boundaries[
         BoundaryIndex.MAXIMAL_Y.value,
-    ][:, np.newaxis]
+    ]
 
 
 if __name__ == '__main__':

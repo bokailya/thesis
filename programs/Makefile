@@ -9,6 +9,6 @@ install_dev_requirements:
 
 lint: $(SOURCES)
 	flake8 $(SOURCE_DIRECTORY)
-	pylint $(SOURCE_DIRECTORY)
+	PYTHONPATH=src/ pylint $(SOURCE_DIRECTORY)
 	MYPYPATH=stubs/ mypy $(SOURCE_DIRECTORY)
 
