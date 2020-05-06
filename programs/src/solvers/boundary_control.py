@@ -420,16 +420,16 @@ def update_neyman(
     pressure[:, 1:-1] += PRESSURE_COEFFICIENT * derivative_y(velocity_y)
 
     # Neyman boundary condition
-    pressure[0, 1:-1] = pressure[1] - 2 * DELTA_X * boundaries[
+    pressure[0, 1:-1] = pressure[1, 1:-1] - 2 * DELTA_X * boundaries[
         BoundaryIndex.MINIMAL_X.value,
     ]
-    pressure[-1, 1:-1] = pressure[-2] - 2 * DELTA_X * boundaries[
+    pressure[-1, 1:-1] = pressure[-2, 1:-1] - 2 * DELTA_X * boundaries[
         BoundaryIndex.MAXIMAL_X.value,
     ]
-    pressure[1:-1, 0] = pressure[:, 1] - 2 * DELTA_Y * boundaries[
+    pressure[1:-1, 0] = pressure[1:-1, 1] - 2 * DELTA_Y * boundaries[
         BoundaryIndex.MINIMAL_Y.value,
     ][:, np.newaxis]
-    pressure[1:-1, -1] = pressure[:, -2] - 2 * DELTA_Y * boundaries[
+    pressure[1:-1, -1] = pressure[1:-1, -2] - 2 * DELTA_Y * boundaries[
         BoundaryIndex.MAXIMAL_Y.value,
     ][:, np.newaxis]
 
