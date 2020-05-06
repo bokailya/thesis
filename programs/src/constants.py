@@ -1,4 +1,13 @@
 """Constant definitions"""
+from enum import Enum
+
+
+class BoundaryIndex(Enum):
+    """Indexes using for saving boundary values to arrays"""
+    MAXIMAL_X = 0
+    MAXIMAL_Y = 1
+    MINIMAL_X = 2
+    MINIMAL_Y = 3
 
 
 # Speed of sound, for solvers with constant speed of sound,
@@ -24,11 +33,11 @@ HALF_MAX_ACCURACY: int = 6
 
 NUMBER_OF_BASIS_FUNCTIONS_BY_SPACE: int = 10
 NUMBER_OF_BASIS_FUNCTIONS_BY_TIME: int = 10
-NUMBER_OF_BORDERS: int = 4
+NUMBER_OF_BOUNDARY_EDGES: int = 4
 NUMBER_OF_BASIS_FUNCTIONS: int = (
     NUMBER_OF_BASIS_FUNCTIONS_BY_SPACE
     * NUMBER_OF_BASIS_FUNCTIONS_BY_TIME
-    * NUMBER_OF_BORDERS
+    * NUMBER_OF_BOUNDARY_EDGES
 )
 
 
