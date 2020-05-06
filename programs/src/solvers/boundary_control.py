@@ -27,7 +27,7 @@ from constants import (
 )
 
 
-NUMBER_OF_TIME_STEPS: int = round((2 * T) / DELTA_T)
+NUMBER_OF_TIME_STEPS: int = int((2 * T) / DELTA_T)
 
 RESULT_FILENAME: str = 'boundary_control'
 TARGET_POINT: np.ndarray = np.array([0.5, 0.5])
@@ -227,10 +227,12 @@ def solve_for_basis_boundaries() -> Tuple[np.ndarray, np.ndarray]:
 
     for boundary_index in range(NUMBER_OF_BOUNDARY_EDGES):
         for basis_function_space_index in range(
-                NUMBER_OF_BASIS_FUNCTIONS_BY_SPACE,
+            1,
+            NUMBER_OF_BASIS_FUNCTIONS_BY_SPACE,
         ):
             for basis_function_time_index in range(
-                    NUMBER_OF_BASIS_FUNCTIONS_BY_TIME,
+                1,
+                NUMBER_OF_BASIS_FUNCTIONS_BY_TIME,
             ):
                 basis_function_space: np.ndarray = np.sin(
                     basis_function_space_index
@@ -243,7 +245,7 @@ def solve_for_basis_boundaries() -> Tuple[np.ndarray, np.ndarray]:
                     np.sin(
                         np.pi
                         * basis_function_time_index
-                        * np.arange(0, DELTA_T, NUMBER_OF_TIME_STEPS)
+                        * np.linspace(0, 2 * T, NUMBER_OF_TIME_STEPS)
                         / T
                     )[:, np.newaxis]
                     @ basis_function_space,
@@ -285,10 +287,12 @@ def solve_for_integrated_basis_boundaries() -> Tuple[np.ndarray, np.ndarray]:
 
     for boundary_index in range(NUMBER_OF_BOUNDARY_EDGES):
         for basis_function_space_index in range(
-                NUMBER_OF_BASIS_FUNCTIONS_BY_SPACE,
+            1,
+            NUMBER_OF_BASIS_FUNCTIONS_BY_SPACE + 1,
         ):
             for basis_function_time_index in range(
-                    NUMBER_OF_BASIS_FUNCTIONS_BY_TIME,
+                1,
+                NUMBER_OF_BASIS_FUNCTIONS_BY_TIME + 1,
             ):
                 basis_function_space: np.ndarray = np.sin(
                     basis_function_space_index
@@ -306,7 +310,7 @@ def solve_for_integrated_basis_boundaries() -> Tuple[np.ndarray, np.ndarray]:
                             - np.cos(
                                 np.pi
                                 * basis_function_time_index
-                                * np.arange(0, DELTA_T, NUMBER_OF_TIME_STEPS)
+                                * np.linspace(0, 2 * T, NUMBER_OF_TIME_STEPS)
                                 / T
                             )
                         )[:, np.newaxis]

@@ -15,7 +15,7 @@ class BoundaryIndex(Enum):
 C: int = 1
 
 
-N: int = 512
+N: int = 128
 
 X_LENGTH: int = 1
 DELTA_X: float = X_LENGTH / (N - 1)
