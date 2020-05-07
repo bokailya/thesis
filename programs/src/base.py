@@ -1,12 +1,11 @@
 """Common settings and functions"""
 from pathlib import Path
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 from matplotlib.animation import FFMpegWriter
 
 from constants import (
-    DELTA_T,
     HALF_MAX_ACCURACY,
     PERFECT_MATCHED_LAYER_SIZE_X,
     PERFECT_MATCHED_LAYER_SIZE_Y,
@@ -100,19 +99,7 @@ def in_circle(
     circle_radius: float,
 ) -> bool:
     # pylint: enable=bad-continuation
-    """
-    Check if point lays inside circle
-
-    Args:
-        x: Point x coordinate
-        y: Point y coordinate
-        x0: Circle center x coordinate
-        y0: Circle center y coordinate
-        radius: Circle radius
-
-    Returns:
-        True if point lays inside circle, False otherwise
-    """
+    """Check if point lays inside circle"""
     return (
         (x_coordinate - circle_center_x_coordinate)**2
         + (y_coordinate - circle_center_y_coordinate)**2
@@ -120,91 +107,8 @@ def in_circle(
     )
 
 
-def perfect_matched_layer_save_pressure(
-    # pylint: disable=bad-continuation
-    pressure_x: np.ndarray,
-    pressure_y: np.ndarray,
-    filename: str,
-) -> None:
-    # pylint: enable=bad-continuation
-    """
-    Save pressure from Perfect Matched Layer solver as image
-
-    Args:
-        pressure from equations with Perfect Matched Layer by x dimension
-        pressure from equations with Perfect Matched Layer by y dimension
-        filename for saving image
-
-    Returns:
-        None
-    """
-    plt.imshow(
-        (
-            pressure_x + pressure_y
-        )[
-            PERFECT_MATCHED_LAYER_SIZE_X:-PERFECT_MATCHED_LAYER_SIZE_X,
-            PERFECT_MATCHED_LAYER_SIZE_Y:-PERFECT_MATCHED_LAYER_SIZE_Y,
-        ],
-        vmin=-1,
-        vmax=1,
-        extent=[0, X_LENGTH, 0, Y_LENGTH],
-    )
-    plt.xlabel('x')
-    plt.ylabel('y')
-    plt.savefig(Path('..') / 'images' / f'{filename}.png')
-
-
-def perfect_matched_layer_x(pressure_x: np.ndarray, sigma_max_x: int) -> None:
-    """
-    Apply Perfect Matched Layer method for x layer
-
-    Args:
-        pressure array
-        maximal absorption coefficient value
-
-    Returns:
-        None
-    """
-    for i in range(PERFECT_MATCHED_LAYER_SIZE_X):
-        coefficient = 1 - DELTA_T * sigma_max_x * (
-            1 - i / PERFECT_MATCHED_LAYER_SIZE_X
-        )
-        pressure_x[i] *= coefficient
-        pressure_x[-i - 1] *= coefficient
-
-
-def perfect_matched_layer_y(pressure_y: np.ndarray, sigma_max_y: int) -> None:
-    """
-    Apply Perfect Matched Layer method for y layer
-
-    Args:
-        pressure array
-        from equations with Perfect Matched Layer for y dimension
-
-        maximal absorption coefficient value
-
-    Returns:
-        None
-    """
-    for i in range(PERFECT_MATCHED_LAYER_SIZE_Y):
-        coefficient = 1 - DELTA_T * sigma_max_y * (
-            1 - i / PERFECT_MATCHED_LAYER_SIZE_Y
-        )
-        pressure_y[:, i] *= coefficient
-        pressure_y[:, -i - 1] *= coefficient
-
-
 def save_pressure(pressure: np.ndarray, filename: str) -> None:
-    """
-    Save pressure as image file
-
-    Args:
-        pressure array
-        filename for saving image
-
-    Returns:
-        None
-    """
+    """Save pressure as image file"""
     plt.imshow(X=pressure, extent=[0, X_LENGTH, 0, Y_LENGTH])
     plt.xlabel('x')
     plt.ylabel('y')
@@ -218,18 +122,7 @@ def update_frame(
     writer: FFMpegWriter,
 ) -> None:
     # pylint: enable=bad-continuation
-    """
-    Update video frame to new pressure for Perfect Matched Layer solvers
-
-    Args:
-        pressure array
-        from equations with Perfect Matched Layer for x dimension
-
-        pressure array
-        from equations with Perfect Matched Layer for y dimension
-
-        ffmpeg writer object
-    """
+    """Update video frame to new pressure for Perfect Matched Layer solvers"""
     plt.imshow(
         (
             pressure_x + pressure_y

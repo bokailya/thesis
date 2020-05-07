@@ -8,7 +8,7 @@ from typing import Tuple
 
 import numpy as np
 
-from solvers.base import derivative_x, derivative_y, save_pressure
+from base import derivative_x, derivative_y, save_pressure
 from constants import (
     BoundaryIndex,
     DELTA_T,
@@ -21,32 +21,36 @@ from constants import (
     NUMBER_OF_BOUNDARY_EDGES,
     PRESSURE_COEFFICIENT,
     T,
+    TARGET_POINT,
     VELOCITY_COEFFICIENT,
     X_LENGTH,
     Y_LENGTH,
 )
 
 
-NUMBER_OF_TIME_STEPS: int = int((2 * T) / DELTA_T)
-
 RESULT_FILENAME: str = 'boundary_control'
-TARGET_POINT: np.ndarray = np.array([0.5, 0.5])
 
 
-def build_boundary(edge_index: int, boundary_value: np.ndarray) -> np.ndarray:
+def build_boundary(
+    # pylint: disable=bad-continuation
+    boundary_value: np.ndarray,
+    edge_index: int,
+    number_of_time_steps: int,
+) -> np.ndarray:
+    # pylint: enable=bad-continuation
     """
     Construct boundary
     with boundary_value on one of the edges and zero value on others
 
     Args:
-        boundary_index: index of edge
+        edge_index: index of edge
         boundary_value:
-        two dimensional array NUMBER_OF_TIME_STEPS x N
+        two dimensional array number_of_time_steps x N
         - boundary value for edge
 
     Returns:
         three dimensional array
-        NUMBER_OF_TIME_STEPS x NUMBER_OF_BOUNDARY_EDGES x N
+        number_of_time_steps x NUMBER_OF_BOUNDARY_EDGES x N
         - boundary value
     """
     return np.swapaxes(
@@ -54,7 +58,7 @@ def build_boundary(edge_index: int, boundary_value: np.ndarray) -> np.ndarray:
             [
                 boundary_value
                 if edge_index == i
-                else np.zeros((NUMBER_OF_TIME_STEPS, N))
+                else np.zeros((number_of_time_steps, N))
                 for i in range(NUMBER_OF_BOUNDARY_EDGES)
             ],
         ),
@@ -75,11 +79,15 @@ def build_boundary_control() -> np.ndarray:
     """
     basis_boundaries, basis_solutions = solve_for_basis_boundaries()
     system_matrix, system_right_hand_side_vector = (
-        build_system_of_linear_equations(basis_boundaries, basis_solutions)
+        build_system_of_linear_equations(
+            basis_boundaries=basis_boundaries,
+            basis_solutions=basis_solutions,
+        )
     )
     boundary_control_coefficients = np.linalg.lstsq(
-        system_matrix,
-        system_right_hand_side_vector,
+        a=system_matrix,
+        b=system_right_hand_side_vector,
+        rcond=None,
     )[0]
     return sum(
         boundary_control_coefficients[i] * basis_boundaries[i]
@@ -103,7 +111,6 @@ def build_system_of_linear_equations(
        matrix of linear system matrix
        right hand side vector of linear system of equations
     """
-
     integrated_basis_boundaries, integrated_basis_solutions = (
         solve_for_integrated_basis_boundaries()
     )
@@ -152,7 +159,7 @@ def build_system_of_linear_equations(
             target_function(x_variable, np.array(X_LENGTH)),
         ],
     )
-    target_normal_derivative: np.ndarray = np.array(
+    target_derivative: np.ndarray = np.array(
         [
             target_normal_derivative(np.array(0), y_variable),
             target_normal_derivative(np.array(Y_LENGTH), y_variable),
@@ -176,7 +183,7 @@ def build_system_of_linear_equations(
                         dx=DELTA_T,
                         y=integrated_basis_solutions[i, :, edge_index],
                     )
-                    * target_normal_derivative
+                    * target_derivative[edge_index]
                 )
             )
             for edge_index in range(NUMBER_OF_BOUNDARY_EDGES)
@@ -198,7 +205,10 @@ def main() -> None:
         None
     """
     save_pressure(
-        solve_forward_problem(build_boundary_control())[0],
+        solve_forward_problem(
+            boundary=build_boundary_control(),
+            number_of_time_steps=round(T / DELTA_T),
+        )[0][1:-1, 1:-1],
         RESULT_FILENAME,
     )
 
@@ -215,10 +225,12 @@ def solve_for_basis_boundaries() -> Tuple[np.ndarray, np.ndarray]:
 
         solution at the boundary for basis Neuman boundary functions
     """
+    number_of_time_steps: int = round(2 * T / DELTA_T)
+
     basis_boundaries: np.ndarray = np.zeros(
         (
             NUMBER_OF_BASIS_FUNCTIONS,
-            NUMBER_OF_TIME_STEPS,
+            number_of_time_steps,
             NUMBER_OF_BOUNDARY_EDGES,
             N,
         ),
@@ -227,14 +239,14 @@ def solve_for_basis_boundaries() -> Tuple[np.ndarray, np.ndarray]:
 
     basis_function_index: int = 0
 
-    for boundary_index in range(NUMBER_OF_BOUNDARY_EDGES):
+    for edge_index in range(NUMBER_OF_BOUNDARY_EDGES):
         for basis_function_space_index in range(
-            1,
-            NUMBER_OF_BASIS_FUNCTIONS_BY_SPACE,
+                1,
+                NUMBER_OF_BASIS_FUNCTIONS_BY_SPACE + 1,
         ):
             for basis_function_time_index in range(
-                1,
-                NUMBER_OF_BASIS_FUNCTIONS_BY_TIME,
+                    1,
+                    NUMBER_OF_BASIS_FUNCTIONS_BY_TIME + 1,
             ):
                 basis_function_space: np.ndarray = np.sin(
                     basis_function_space_index
@@ -243,19 +255,27 @@ def solve_for_basis_boundaries() -> Tuple[np.ndarray, np.ndarray]:
                 )[np.newaxis]
 
                 basis_boundaries[basis_function_index] = build_boundary(
-                    boundary_index,
-                    np.sin(
-                        np.pi
-                        * basis_function_time_index
-                        * np.linspace(0, 2 * T, NUMBER_OF_TIME_STEPS)
-                        / T
-                    )[:, np.newaxis]
-                    @ basis_function_space,
+                    boundary_value=(
+                        np.sin(
+                            np.pi
+                            * basis_function_time_index
+                            * np.linspace(0, 2 * T, number_of_time_steps)
+                            / T
+                        )[:, np.newaxis]
+                        @ basis_function_space
+                    ),
+                    edge_index=edge_index,
+                    number_of_time_steps=number_of_time_steps,
                 )
 
                 solution_for_basis_boundaries[
                     basis_function_index,
-                ] = solve_forward_problem(basis_boundaries[-1])[1]
+                ] = solve_forward_problem(
+                    boundary=basis_boundaries[-1],
+                    number_of_time_steps=number_of_time_steps,
+                )[1]
+
+                basis_function_index += 1
 
     return basis_boundaries, solution_for_basis_boundaries
 
@@ -273,10 +293,12 @@ def solve_for_integrated_basis_boundaries() -> Tuple[np.ndarray, np.ndarray]:
         solution at the boundary for basis Neuman boundary functions
         integrated by time
     """
+    number_of_time_steps: int = round(2 * T / DELTA_T)
+
     integrated_basis_boundaries: np.ndarray = np.zeros(
         (
             NUMBER_OF_BASIS_FUNCTIONS,
-            NUMBER_OF_TIME_STEPS,
+            number_of_time_steps,
             NUMBER_OF_BOUNDARY_EDGES,
             N,
         ),
@@ -287,14 +309,14 @@ def solve_for_integrated_basis_boundaries() -> Tuple[np.ndarray, np.ndarray]:
 
     basis_function_index: int = 0
 
-    for boundary_index in range(NUMBER_OF_BOUNDARY_EDGES):
+    for edge_index in range(NUMBER_OF_BOUNDARY_EDGES):
         for basis_function_space_index in range(
-            1,
-            NUMBER_OF_BASIS_FUNCTIONS_BY_SPACE + 1,
+                1,
+                NUMBER_OF_BASIS_FUNCTIONS_BY_SPACE + 1,
         ):
             for basis_function_time_index in range(
-                1,
-                NUMBER_OF_BASIS_FUNCTIONS_BY_TIME + 1,
+                    1,
+                    NUMBER_OF_BASIS_FUNCTIONS_BY_TIME + 1,
             ):
                 basis_function_space: np.ndarray = np.sin(
                     basis_function_space_index
@@ -304,25 +326,37 @@ def solve_for_integrated_basis_boundaries() -> Tuple[np.ndarray, np.ndarray]:
 
                 integrated_basis_boundaries[basis_function_index] = (
                     build_boundary(
-                        boundary_index,
-                        T
-                        / (np.pi * basis_function_time_index)
-                        * (
-                            1
-                            - np.cos(
-                                np.pi
-                                * basis_function_time_index
-                                * np.linspace(0, 2 * T, NUMBER_OF_TIME_STEPS)
-                                / T
-                            )
-                        )[:, np.newaxis]
-                        @ basis_function_space,
+                        boundary_value=(
+                            T
+                            / (np.pi * basis_function_time_index)
+                            * (
+                                1
+                                - np.cos(
+                                    np.pi
+                                    * basis_function_time_index
+                                    * np.linspace(
+                                        0,
+                                        2 * T,
+                                        number_of_time_steps,
+                                    )
+                                    / T
+                                )
+                            )[:, np.newaxis]
+                            @ basis_function_space
+                        ),
+                        edge_index=edge_index,
+                        number_of_time_steps=number_of_time_steps,
                     )
                 )
 
                 integrated_solution_for_basis_boundaries[
                     basis_function_index,
-                ] = solve_forward_problem(integrated_basis_boundaries[-1])[1]
+                ] = solve_forward_problem(
+                    boundary=integrated_basis_boundaries[-1],
+                    number_of_time_steps=number_of_time_steps,
+                )[1]
+
+                basis_function_index += 1
 
     return (
         integrated_basis_boundaries,
@@ -330,7 +364,12 @@ def solve_for_integrated_basis_boundaries() -> Tuple[np.ndarray, np.ndarray]:
     )
 
 
-def solve_forward_problem(boundaries: np.ndarray) -> np.ndarray:
+def solve_forward_problem(
+    # pylint: disable=bad-continuation
+    boundary: np.ndarray,
+    number_of_time_steps: int,
+) -> np.ndarray:
+    # pylint: enable=bad-continuation
     """
     Solve forward problem (initial-boundary value problem) for wave equation
     using Finite-Difference Time-Domain method
@@ -348,22 +387,27 @@ def solve_forward_problem(boundaries: np.ndarray) -> np.ndarray:
     )
 
     solution_boundary: np.ndarray = np.zeros(
-        (NUMBER_OF_TIME_STEPS, NUMBER_OF_BOUNDARY_EDGES, N),
+        (number_of_time_steps, NUMBER_OF_BOUNDARY_EDGES, N),
     )
 
-    for time_index in range(NUMBER_OF_TIME_STEPS):
-        update_neyman(pressure, velocity_x, velocity_y, boundaries[time_index])
+    for time_index in range(number_of_time_steps):
+        update_neyman(pressure, velocity_x, velocity_y, boundary[time_index])
         solution_boundary[time_index] = [
-            pressure[1],
-            pressure[-2],
-            pressure[:, 1].transpose(),
-            pressure[:, -2].transpose(),
+            pressure[1, 1:-1],
+            pressure[-2, 1:-1],
+            pressure[1:-1, 1],
+            pressure[1:-1, -2],
         ]
 
     return pressure, solution_boundary
 
 
-def target_function(x: np.ndarray, y: np.ndarray):
+def target_function(
+    # pylint: disable=bad-continuation
+    x_variable: np.ndarray,
+    y_variable: np.ndarray,
+) -> np.ndarray:
+    # pylint: enable=bad-continuation
     """
     Target value for wave function u(., T)
 
@@ -373,10 +417,20 @@ def target_function(x: np.ndarray, y: np.ndarray):
     Returns:
         Target function values
     """
-    return np.log(np.sqrt((x - TARGET_POINT[0])**2 + (y - TARGET_POINT[1])**2))
+    return np.log(
+        np.sqrt(
+            (x_variable - TARGET_POINT[0])**2
+            + (y_variable - TARGET_POINT[1])**2,
+        ),
+    )
 
 
-def target_normal_derivative(x: np.ndarray, y: np.ndarray):
+def target_normal_derivative(
+    # pylint: disable=bad-continuation
+    x_variable: np.ndarray,
+    y_variable: np.ndarray,
+) -> np.ndarray:
+    # pylint: enable=bad-continuation
     """
     Target value for normal derivative of wave function du(., T) / dn
 
@@ -386,52 +440,68 @@ def target_normal_derivative(x: np.ndarray, y: np.ndarray):
     Returns:
         Target function values
     """
-    if (x == 0).all():
-        return -(x - TARGET_POINT[0]) / (
-            (x - TARGET_POINT[0])**2
-            + (y - TARGET_POINT[1])**2
+    if (x_variable == 0).all():
+        return -(x_variable - TARGET_POINT[0]) / (
+            (x_variable - TARGET_POINT[0])**2
+            + (y_variable - TARGET_POINT[1])**2
         )
-    elif (x == X_LENGTH).all():
-        return (x - TARGET_POINT[0]) / (
-            (x - TARGET_POINT[0])**2
-            + (y - TARGET_POINT[1])**2
+    if (x_variable == X_LENGTH).all():
+        return (x_variable - TARGET_POINT[0]) / (
+            (x_variable - TARGET_POINT[0])**2
+            + (y_variable - TARGET_POINT[1])**2
         )
-    elif (y == 0).all():
-        return -(y - TARGET_POINT[1]) / (
-            (x - TARGET_POINT[0])**2
-            + (y - TARGET_POINT[1])**2
+    if (y_variable == 0).all():
+        return -(y_variable - TARGET_POINT[1]) / (
+            (x_variable - TARGET_POINT[0])**2
+            + (y_variable - TARGET_POINT[1])**2
         )
-    elif (y == Y_LENGTH).all():
-        return (y - TARGET_POINT[1]) / (
-            (x - TARGET_POINT[0])**2
-            + (y - TARGET_POINT[1])**2
+    if (y_variable == Y_LENGTH).all():
+        return (y_variable - TARGET_POINT[1]) / (
+            (x_variable - TARGET_POINT[0])**2
+            + (y_variable - TARGET_POINT[1])**2
         )
-    else:
-        raise ValueError('One of arguments should have boundary value')
+
+    raise ValueError('One of arguments should have boundary value')
 
 
 def update_neyman(
+    # pylint: disable=bad-continuation
     pressure: np.ndarray,
     velocity_x: np.ndarray,
     velocity_y: np.ndarray,
-    boundaries: np.ndarray,
+    boundary: np.ndarray,
 ) -> None:
+    # pylint: enable=bad-continuation
+    """
+    Update by one timestep
+    state of forward problem (initial-boundary value problem)
+
+    Args:
+        pressure array
+        x velocity components array
+        y velocity components array
+        boundary array
+
+    Returns:
+        None
+    """
+    # pylint: enable=bad-continuation
     velocity_x += VELOCITY_COEFFICIENT * derivative_x(pressure)
     velocity_y += VELOCITY_COEFFICIENT * derivative_y(pressure)
     pressure[1:-1] += PRESSURE_COEFFICIENT * derivative_x(velocity_x)
     pressure[:, 1:-1] += PRESSURE_COEFFICIENT * derivative_y(velocity_y)
 
     # Neyman boundary condition
-    pressure[0, 1:-1] = pressure[1, 1:-1] - 2 * DELTA_X * boundaries[
+    pressure[0, 1:-1] = pressure[1, 1:-1] - 2 * DELTA_X * boundary[
         BoundaryIndex.MINIMAL_X.value,
     ]
-    pressure[-1, 1:-1] = pressure[-2, 1:-1] - 2 * DELTA_X * boundaries[
+    pressure[-1, 1:-1] = pressure[-2, 1:-1] - 2 * DELTA_X * boundary[
         BoundaryIndex.MAXIMAL_X.value,
     ]
-    pressure[1:-1, 0] = pressure[1:-1, 1] - 2 * DELTA_Y * boundaries[
+    pressure[1:-1, 0] = pressure[1:-1, 1] - 2 * DELTA_Y * boundary[
         BoundaryIndex.MINIMAL_Y.value,
     ]
-    pressure[1:-1, -1] = pressure[1:-1, -2] - 2 * DELTA_Y * boundaries[
+    pressure[1:-1, -1] = pressure[1:-1, -2] - 2 * DELTA_Y * boundary[
         BoundaryIndex.MAXIMAL_Y.value,
     ]
 
