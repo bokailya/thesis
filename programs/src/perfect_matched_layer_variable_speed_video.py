@@ -6,9 +6,9 @@ Save resulting animation.
 """
 from pathlib import Path
 
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt  # type: ignore
 import numpy as np
-from matplotlib.animation import FFMpegWriter
+from matplotlib.animation import FFMpegWriter  # type: ignore
 
 from base import derivative_x, derivative_y, in_circle, update_frame
 from constants import (

@@ -89,7 +89,7 @@ def build_boundary_control() -> np.ndarray:
         b=system_right_hand_side_vector,
         rcond=None,
     )[0]
-    return sum(
+    return sum(  # type: ignore
         boundary_control_coefficients[i] * basis_boundaries[i]
         for i in range(NUMBER_OF_BASIS_FUNCTIONS)
     )
@@ -248,7 +248,7 @@ def solve_for_basis_boundaries() -> Tuple[np.ndarray, np.ndarray]:
                     1,
                     NUMBER_OF_BASIS_FUNCTIONS_BY_TIME + 1,
             ):
-                basis_function_space: np.ndarray = np.sin(
+                basis_function_space: np.ndarray = np.sin(  # type: ignore
                     basis_function_space_index
                     * np.pi
                     * np.linspace(0, 1, N),
@@ -256,7 +256,7 @@ def solve_for_basis_boundaries() -> Tuple[np.ndarray, np.ndarray]:
 
                 basis_boundaries[basis_function_index] = build_boundary(
                     boundary_value=(
-                        np.sin(
+                        np.sin(  # type: ignore
                             np.pi
                             * basis_function_time_index
                             * np.linspace(0, 2 * T, number_of_time_steps)
@@ -271,7 +271,7 @@ def solve_for_basis_boundaries() -> Tuple[np.ndarray, np.ndarray]:
                 solution_for_basis_boundaries[
                     basis_function_index,
                 ] = solve_forward_problem(
-                    boundary=basis_boundaries[-1],
+                    boundary=basis_boundaries[basis_function_index],
                     number_of_time_steps=number_of_time_steps,
                 )[1]
 
@@ -318,7 +318,7 @@ def solve_for_integrated_basis_boundaries() -> Tuple[np.ndarray, np.ndarray]:
                     1,
                     NUMBER_OF_BASIS_FUNCTIONS_BY_TIME + 1,
             ):
-                basis_function_space: np.ndarray = np.sin(
+                basis_function_space: np.ndarray = np.sin(  # type: ignore
                     basis_function_space_index
                     * np.pi
                     * np.linspace(0, 1, N),
@@ -352,7 +352,7 @@ def solve_for_integrated_basis_boundaries() -> Tuple[np.ndarray, np.ndarray]:
                 integrated_solution_for_basis_boundaries[
                     basis_function_index,
                 ] = solve_forward_problem(
-                    boundary=integrated_basis_boundaries[-1],
+                    boundary=integrated_basis_boundaries[basis_function_index],
                     number_of_time_steps=number_of_time_steps,
                 )[1]
 
@@ -368,7 +368,7 @@ def solve_forward_problem(
     # pylint: disable=bad-continuation
     boundary: np.ndarray,
     number_of_time_steps: int,
-) -> np.ndarray:
+) -> Tuple[np.ndarray, np.ndarray]:
     # pylint: enable=bad-continuation
     """
     Solve forward problem (initial-boundary value problem) for wave equation
@@ -417,7 +417,7 @@ def target_function(
     Returns:
         Target function values
     """
-    return np.log(
+    return np.log(  # type: ignore
         np.sqrt(
             (x_variable - TARGET_POINT[0])**2
             + (y_variable - TARGET_POINT[1])**2,

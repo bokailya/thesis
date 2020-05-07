@@ -1,16 +1,17 @@
 SOURCE_DIRECTORY := src/
-STUB_DIRECTORY := stubs/
+TEST_DIRECTORY := test/
 
-SOURCES := $(shell find $(SOURCE_DIRECTORY) -name '*.py')
-STUBS := $(shell find $(STUB_DIRECTORY) -name '*.pyi')
-
-all: lint
+all: lint test
 
 install_dev_requirements:
 	pip install --requirement config/requirements-dev.txt
 
-lint: $(SOURCES) $(STUBS)
+lint:
 	flake8 $(SOURCE_DIRECTORY) $(STUB_DIRECTORY)
-	PYTHONPATH=src/ pylint $(SOURCE_DIRECTORY) $(STUB_DIRECTORY)
-	MYPYPATH=$(STUB_DIRECTORY) mypy $(SOURCE_DIRECTORY) $(STUB_DIRECTORY)
+	PYTHONPATH=$(SOURCE_DIRECTORY) pylint $(SOURCE_DIRECTORY) $(STUB_DIRECTORY)
+	MYPYPATH=$(SOURCE_DIRECTORY) mypy $(SOURCE_DIRECTORY) $(STUB_DIRECTORY)
 
+test:
+	test/test.py
+
+.PHONY: all install_dev_requirements lint test
