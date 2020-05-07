@@ -1,7 +1,4 @@
 [SIMILARITIES]
 
-# Ignore imports when computing similarities
-ignore-imports=yes
-
 # Minimum lines number of similarity
 min-similarity-lines=9

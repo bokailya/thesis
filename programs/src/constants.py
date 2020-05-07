@@ -16,7 +16,7 @@ class BoundaryIndex(Enum):
 C: int = 1
 
 
-N: int = 16
+N: int = 128
 
 X_LENGTH: int = 1
 DELTA_X: float = X_LENGTH / (N - 1)
@@ -52,7 +52,7 @@ PERFECT_MATCHED_LAYER_SIZE_Y: int = round(
 )
 
 RHO: int = 1
-PRESSURE_COEFFICIENT: float = -DELTA_T * RHO * C**2 / DELTA_X
+PRESSURE_COEFFICIENT: float = -DELTA_T * RHO * C**2
 
 # Other Perfect Matched Layer parameters
 SIGMA_X_MAX: int = 1000
@@ -64,4 +64,4 @@ T: float = 0.5
 
 TARGET_POINT: np.ndarray = np.array([0.5, 0.5])
 
-VELOCITY_COEFFICIENT: float = -DELTA_T / (DELTA_X * RHO)
+VELOCITY_COEFFICIENT: float = -DELTA_T / RHO

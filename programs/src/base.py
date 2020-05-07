@@ -6,6 +6,8 @@ import numpy as np
 from matplotlib.animation import FFMpegWriter  # type: ignore
 
 from constants import (
+    DELTA_X,
+    DELTA_Y,
     HALF_MAX_ACCURACY,
     PERFECT_MATCHED_LAYER_SIZE_X,
     PERFECT_MATCHED_LAYER_SIZE_Y,
@@ -67,7 +69,7 @@ def derivative_x(function: np.ndarray) -> np.ndarray:
             result[i] += _numerical_differentiation_coefficients[
                 half_accuracy - 1
             ][j] * function[i + j + 1 - half_accuracy]
-    return result
+    return result / DELTA_X
 
 
 def derivative_y(function: np.ndarray) -> np.ndarray:
@@ -87,7 +89,7 @@ def derivative_y(function: np.ndarray) -> np.ndarray:
             result[:, i] += _numerical_differentiation_coefficients[
                 half_accuracy - 1
             ][j] * function[:, i + j + 1 - half_accuracy]
-    return result
+    return result / DELTA_Y
 
 
 def in_circle(

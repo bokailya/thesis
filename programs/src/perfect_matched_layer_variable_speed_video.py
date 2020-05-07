@@ -35,7 +35,7 @@ from perfect_matched_layer_base import (
 
 
 # for variable speed solver
-PRESSURE_COEFFICIENT: float = -DELTA_T * RHO / DELTA_X
+PRESSURE_COEFFICIENT: float = -DELTA_T * RHO
 
 RESULT_FILENAME: str = 'perfect_matched_layer_variable_speed'
 
