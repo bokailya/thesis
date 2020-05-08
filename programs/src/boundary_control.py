@@ -265,11 +265,12 @@ def solve_for_basis_boundaries() -> Tuple[np.ndarray, np.ndarray]:
                 ):
                     for time_function in [np.sin, np.cos]:
                         basis_function_space: np.ndarray = space_function(
-                            (
+                            2
+                            * np.pi
+                            * (
                                 basis_function_space_index
                                 + int(space_function == np.sin)
                             )
-                            * np.pi
                             * np.linspace(0, 1, N),
                         )[np.newaxis]
 
@@ -277,7 +278,8 @@ def solve_for_basis_boundaries() -> Tuple[np.ndarray, np.ndarray]:
                             build_boundary(
                                 boundary_value=(
                                     time_function(
-                                        np.pi
+                                        2
+                                        * np.pi
                                         * (
                                             basis_function_time_index
                                             + int(time_function == np.sin)
@@ -346,32 +348,45 @@ def solve_for_integrated_basis_boundaries() -> Tuple[np.ndarray, np.ndarray]:
                         NUMBER_OF_BASIS_FUNCTIONS_BY_TIME,
                 ):
                     for time_function in [
-                            np.sin(
-                                np.pi
+                            T
+                            / (2 * np.pi * (basis_function_time_index + 1))
+                            * np.sin(
+                                2
+                                * np.pi
                                 * (basis_function_time_index + 1)
                                 * np.linspace(0, 2 * T, number_of_time_steps)
                                 / T
                             ),
-                            1
-                            - np.cos(
-                                np.pi
-                                * basis_function_time_index
-                                * np.linspace(0, 2 * T, number_of_time_steps)
-                                / T
-                            ),
+                            T
+                            / (2 * np.pi * basis_function_time_index)
+                            * (
+                                1
+                                - np.cos(
+                                    2
+                                    * np.pi
+                                    * basis_function_time_index
+                                    * np.linspace(
+                                        0,
+                                        2 * T,
+                                        number_of_time_steps,
+                                    )
+                                    / T
+                                )
+                            )
+                            if basis_function_time_index
+                            else np.linspace(0, 2 * T, number_of_time_steps),
                     ]:
                         basis_function_space: np.ndarray = space_function(
-                            basis_function_space_index
+                            2
                             * np.pi
+                            * basis_function_space_index
                             * np.linspace(0, 1, N),
                         )[np.newaxis]
 
                         integrated_basis_boundaries[basis_function_index] = (
                             build_boundary(
                                 boundary_value=(
-                                    T
-                                    / (np.pi * basis_function_time_index)
-                                    * time_function[:, np.newaxis]
+                                    time_function[:, np.newaxis]
                                     @ basis_function_space
                                 ),
                                 edge_index=edge_index,
