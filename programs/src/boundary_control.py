@@ -350,21 +350,12 @@ def solve_for_integrated_basis_boundaries() -> Tuple[np.ndarray, np.ndarray]:
                     for time_function in [
                             T
                             / (2 * np.pi * (basis_function_time_index + 1))
-                            * np.sin(
-                                2
-                                * np.pi
-                                * (basis_function_time_index + 1)
-                                * np.linspace(0, 2 * T, number_of_time_steps)
-                                / T
-                            ),
-                            T
-                            / (2 * np.pi * basis_function_time_index)
                             * (
                                 1
                                 - np.cos(
                                     2
                                     * np.pi
-                                    * basis_function_time_index
+                                    * (basis_function_time_index + 1)
                                     * np.linspace(
                                         0,
                                         2 * T,
@@ -372,6 +363,15 @@ def solve_for_integrated_basis_boundaries() -> Tuple[np.ndarray, np.ndarray]:
                                     )
                                     / T
                                 )
+                            ),
+                            T
+                            / (2 * np.pi * (basis_function_time_index + 1))
+                            * np.sin(
+                                2
+                                * np.pi
+                                * (basis_function_time_index + 1)
+                                * np.linspace(0, 2 * T, number_of_time_steps)
+                                / T
                             )
                             if basis_function_time_index
                             else np.linspace(0, 2 * T, number_of_time_steps),
