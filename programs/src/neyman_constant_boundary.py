@@ -6,7 +6,7 @@ with constant Neuman boundary condition
 using Finite-Difference Time-Domain method
 and save image of result
 """
-import numpy as np
+import numpy as np  # type: ignore
 
 from base import derivative_x, derivative_y, save_pressure
 from constants import (

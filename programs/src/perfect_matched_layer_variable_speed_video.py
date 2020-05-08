@@ -7,7 +7,7 @@ Save resulting animation.
 from pathlib import Path
 
 import matplotlib.pyplot as plt  # type: ignore
-import numpy as np
+import numpy as np  # type: ignore
 from matplotlib.animation import FFMpegWriter  # type: ignore
 
 from base import derivative_x, derivative_y, in_circle, update_frame

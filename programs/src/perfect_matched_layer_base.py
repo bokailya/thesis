@@ -3,7 +3,7 @@ Common stuff for perfect matched layer with constant speed of sound solvers
 """
 from typing import Tuple
 
-import numpy as np
+import numpy as np  # type: ignore
 
 import base
 from constants import (

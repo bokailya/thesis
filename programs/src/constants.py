@@ -1,6 +1,6 @@
 """Constant definitions"""
 from enum import Enum
-import numpy as np
+import numpy as np  # type: ignore
 
 
 class BoundaryIndex(Enum):
@@ -16,7 +16,7 @@ class BoundaryIndex(Enum):
 C: int = 1
 
 
-N: int = 128
+N: int = 2
 
 X_LENGTH: int = 1
 DELTA_X: float = X_LENGTH / (N - 1)
@@ -32,13 +32,14 @@ FPS: int = 30
 
 HALF_MAX_ACCURACY: int = 6
 
-NUMBER_OF_BASIS_FUNCTIONS_BY_SPACE: int = 4
-NUMBER_OF_BASIS_FUNCTIONS_BY_TIME: int = 4
+NUMBER_OF_BASIS_FUNCTIONS_BY_SPACE: int = 1
+NUMBER_OF_BASIS_FUNCTIONS_BY_TIME: int = 1
 NUMBER_OF_BOUNDARY_EDGES: int = 4
 NUMBER_OF_BASIS_FUNCTIONS: int = (
     NUMBER_OF_BASIS_FUNCTIONS_BY_SPACE
     * NUMBER_OF_BASIS_FUNCTIONS_BY_TIME
     * NUMBER_OF_BOUNDARY_EDGES
+    * 4  # cos(x) * cos(t), cos(x) * sin(t), sin(x) * cos(t), sin(x) * sin(t)
 )
 
 

@@ -6,7 +6,7 @@ with zero Neyman boundary condition
 using Finite-Difference Time-Domain method
 and save animation
 """
-import numpy as np
+import numpy as np  # type: ignore
 
 from base import derivative_x, derivative_y, in_circle, save_pressure
 from constants import (

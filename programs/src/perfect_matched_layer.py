@@ -2,7 +2,7 @@
 with Perfectly Matched Layer
 using Finite-Difference Time-Domain method
 """
-import numpy as np
+import numpy as np  # type: ignore
 
 from constants import DELTA_T, T
 from perfect_matched_layer_base import (

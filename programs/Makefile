@@ -12,6 +12,6 @@ lint:
 	MYPYPATH=$(SOURCE_DIRECTORY) mypy $(SOURCE_DIRECTORY) $(TEST_DIRECTORY)
 
 test:
-	python -m unittest
+	PYTHONPATH=$(SOURCE_DIRECTORY) python -m unittest
 
 .PHONY: all install_dev_requirements lint test
