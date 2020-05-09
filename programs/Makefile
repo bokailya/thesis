@@ -1,17 +1,9 @@
-SOURCE_DIRECTORY := src/
-TEST_DIRECTORY := test/
+check: check_matlab check_python
 
-all: lint test
+check_matlab:
+	$(MAKE) check --directory matlab/
 
-install_dev_requirements:
-	pip install --requirement config/requirements-dev.txt
+check_python:
+	$(MAKE) check --directory python/
 
-lint:
-	flake8 $(SOURCE_DIRECTORY) $(TEST_DIRECTORY)
-	PYTHONPATH=$(SOURCE_DIRECTORY) pylint $(SOURCE_DIRECTORY) $(TEST_DIRECTORY)
-	MYPYPATH=$(SOURCE_DIRECTORY) mypy $(SOURCE_DIRECTORY) $(TEST_DIRECTORY)
-
-test:
-	PYTHONPATH=$(SOURCE_DIRECTORY) python -m unittest
-
-.PHONY: all install_dev_requirements lint test
+.PHONY:  check_matlab check_python
