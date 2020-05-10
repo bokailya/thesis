@@ -1,4 +1,5 @@
-SOURCE_FILENAME := solve_initial_boundary_value_problem_for_wave_equation.m
+SOURCE_FILENAME := \
+	src/solve_initial_boundary_value_problems_with_basis_controls.m
 
 
 check: lint
