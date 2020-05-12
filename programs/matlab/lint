@@ -1,0 +1,7 @@
+#!/usr/bin/env sh
+for matlab_source_file in $@
+do
+    MATLAB_COMMAND="${MATLAB_COMMAND}mlint('$matlab_source_file'); "
+done
+
+matlab -nojvm -r "${MATLAB_COMMAND}exit"

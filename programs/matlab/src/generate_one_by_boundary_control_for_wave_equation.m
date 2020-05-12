@@ -1,6 +1,6 @@
-END_TIME = 0.5;
-SPACE_BASIS_FUNCTION_COUNT = 2;
-TIME_BASIS_FUNCTION_COUNT = 2;
+END_TIME = 1;
+SPACE_BASIS_FUNCTION_COUNT = 1;
+TIME_BASIS_FUNCTION_COUNT = 8;
 
 global TIME_STEP_SIZE
 
@@ -14,21 +14,22 @@ generateMesh(model);
 setInitialConditions(model,0,0);
 
 
+sizeOfNodes = size(model.Mesh.Nodes);
+numberOfNodes = sizeOfNodes(2);
+
+solutions = ...
+    zeros(numberOfNodes, ...
+    SPACE_BASIS_FUNCTION_COUNT * TIME_BASIS_FUNCTION_COUNT);
+
+applyBoundaryCondition(model,'neumann', ...
+                             'Edge',1:model.Geometry.NumEdges, ...
+                             'g',@neumanControl);
+
 global iSpaceBasisFunction
 global jtimeBasisFunction
 
-
-sizeOfNodes = size(model.Mesh.Nodes);
-solutions = ...
-    zeros(sizeOfNodes(2), ...
-    SPACE_BASIS_FUNCTION_COUNT * TIME_BASIS_FUNCTION_COUNT);
-
 for iSpaceBasisFunction = 0:SPACE_BASIS_FUNCTION_COUNT - 1
     for jtimeBasisFunction = 1:TIME_BASIS_FUNCTION_COUNT
-        applyBoundaryCondition(model,'neumann', ...
-                                     'Edge',1:model.Geometry.NumEdges, ...
-                                     'g', @neumanControl);
-
         solution = solvepde(model,[0 END_TIME]);
         solutions(:, ...
             iSpaceBasisFunction * SPACE_BASIS_FUNCTION_COUNT ...
@@ -37,13 +38,23 @@ for iSpaceBasisFunction = 0:SPACE_BASIS_FUNCTION_COUNT - 1
     end
 end
 
-for iSolution = 1:SPACE_BASIS_FUNCTION_COUNT * TIME_BASIS_FUNCTION_COUNT
-    subplot(SPACE_BASIS_FUNCTION_COUNT, TIME_BASIS_FUNCTION_COUNT, iSolution)
-    pdeplot(model,'XYData',solutions(:,iSolution))
-end
+applyBoundaryCondition(model,'neumann', ...
+                             'Edge',1:model.Geometry.NumEdges, ...
+                             'g', 0);
+finiteElementMatrices = assembleFEMatrices(model);
 
-[~,finiteElementMassMatrix,~] = assema(model,1,0,0);
-connectionMatrix = transpose(solutions) * finiteElementMassMatrix * solutions;
+connectionMatrix = ...
+    transpose(solutions) * finiteElementMatrices.M * solutions;
+
+borderControlBasisCoefficients = ...
+    pinv(connectionMatrix) ...
+    * transpose(solutions) ...
+    * finiteElementMatrices.M ...
+    * ones(numberOfNodes, 1);
+
+oneWave = solutions * borderControlBasisCoefficients;
+
+pdeplot(model,'XYData',oneWave)
 
 
 function result = neumanControl(location,state)

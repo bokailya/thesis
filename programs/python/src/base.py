@@ -63,9 +63,12 @@ def derivative_x(function: np.ndarray) -> np.ndarray:
     """
     result: np.ndarray = np.zeros((function.shape[0] - 1, function.shape[1]))
     for i in range(function.shape[0] - 1):
-        accuracy: int = min(12, 2 * i + 2, (function.shape[0] - i - 1) * 2)
-        half_accuracy: int = accuracy // 2
-        for j in range(accuracy):
+        half_accuracy: int = min(
+            HALF_MAX_ACCURACY,
+            i + 1,
+            function.shape[0] - i - 1,
+        )
+        for j in range(half_accuracy * 2):
             result[i] += _numerical_differentiation_coefficients[
                 half_accuracy - 1
             ][j] * function[i + j + 1 - half_accuracy]
