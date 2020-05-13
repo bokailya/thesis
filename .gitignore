@@ -3,6 +3,6 @@
 *.blg
 *.log
 *.toc
-/programs/python/venv
+/programs/finite_difference_time_domain_method/venv/
 .mypy_cache
 __pycache__
