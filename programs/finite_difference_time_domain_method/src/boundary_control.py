@@ -540,7 +540,7 @@ def update_neyman(
     pressure[1:-1] += PRESSURE_COEFFICIENT * derivative_x(velocity_x)
     pressure[:, 1:-1] += PRESSURE_COEFFICIENT * derivative_y(velocity_y)
 
-    # Neyman boundary condition
+    # Neumann boundary condition
     pressure[0, 1:-1] = pressure[1, 1:-1] - 2 * DELTA_X * boundary[
         BoundaryIndex.MINIMAL_X.value,
     ]

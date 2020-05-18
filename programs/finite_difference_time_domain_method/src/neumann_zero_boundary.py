@@ -2,7 +2,7 @@
 """
 Solve numerically forward problem (initial-boundary value problem)
 for wave equation
-with zero Neyman boundary condition
+with zero Neumann boundary condition
 using Finite-Difference Time-Domain method
 and save animation
 """
@@ -31,7 +31,7 @@ def update_neyman(press: np.ndarray, v_x: np.ndarray, v_y: np.ndarray) -> None:
     press[1:-1] += PRESSURE_COEFFICIENT * derivative_x(v_x)
     press[:, 1:-1] += PRESSURE_COEFFICIENT * derivative_y(v_y)
 
-    # Neyman boundary condition
+    # Neumann boundary condition
     press[0] += 2 * PRESSURE_COEFFICIENT / DELTA_X * v_x[0]
     press[-1] += 2 * PRESSURE_COEFFICIENT / DELTA_X * -v_x[-1]
     press[:, 0] += 2 * PRESSURE_COEFFICIENT / DELTA_Y * v_y[:, 0]

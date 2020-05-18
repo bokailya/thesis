@@ -30,7 +30,7 @@ def update_neyman(press: np.ndarray, v_x: np.ndarray, v_y: np.ndarray) -> None:
     press[1:-1] += PRESSURE_COEFFICIENT * derivative_x(v_x)
     press[:, 1:-1] += PRESSURE_COEFFICIENT * derivative_y(v_y)
 
-    # Neyman boundary condition
+    # Neumann boundary condition
     press[0] = press[1] - 2 * DELTA_X
     press[-1] = press[-2] - 2 * DELTA_X
     press[:, 0] = press[:, 1] - 2 * DELTA_Y
