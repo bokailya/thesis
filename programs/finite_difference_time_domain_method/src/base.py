@@ -17,13 +17,13 @@ from constants import (
 
 
 def _coefficients(half_accuracy: int) -> np.ndarray:
-    """Find coefficients for numerical differentiantion
+    """Find coefficients for numerical differentiation
 
     Args:
-        half_accuracy: Half of numerical differentiantion accuracy
+        half_accuracy: Half of numerical differentiation accuracy
 
     Returns:
-        Array of coefficients for numerical differentiantion
+        Array of coefficients for numerical differentiation
     """
     accuracy: int = 2 * half_accuracy
     return np.delete(
