@@ -117,7 +117,7 @@ def save_pressure(pressure: np.ndarray, filename: str) -> None:
     plt.imshow(X=pressure, extent=[0, X_LENGTH, 0, Y_LENGTH])
     plt.xlabel('x')
     plt.ylabel('y')
-    plt.savefig(Path('..') / 'images' / f'{filename}.png')
+    plt.savefig(Path('..') / '..' / 'images' / f'{filename}.png')
 
 
 def update_frame(
