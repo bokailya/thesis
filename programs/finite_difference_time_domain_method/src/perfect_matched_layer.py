@@ -1,4 +1,6 @@
-"""Solve numerically forward problem for wave equation
+#!/usr/bin/env python
+"""
+Solve numerically forward problem for wave equation
 with Perfectly Matched Layer
 using Finite-Difference Time-Domain method
 """

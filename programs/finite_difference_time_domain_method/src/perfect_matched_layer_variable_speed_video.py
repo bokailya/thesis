@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """
 Solve numerically forward problem (initial value problem)
 for wave equation with variable speed of sound
@@ -104,7 +105,7 @@ def main() -> None:
         ),
     ).astype(float)
 
-    pressure_x: np.ndarray = np.fromfunction(  # pylint: disable=no-member
+    pressure_x: np.ndarray = np.fromfunction(
         function=(
             lambda i, j: (
                 in_circle(
@@ -120,7 +121,7 @@ def main() -> None:
                     circle_radius=0.01,
                     x_coordinate=(i - PERFECT_MATCHED_LAYER_SIZE_X) * DELTA_X,
                     y_coordinate=(j - PERFECT_MATCHED_LAYER_SIZE_Y) * DELTA_Y,
-                ),
+                )
             )
         ),
         shape=(
@@ -135,7 +136,7 @@ def main() -> None:
     writer = FFMpegWriter(FPS)
     with writer.saving(
             fig=fig,
-            outfile=Path('..') / 'videos' / f'{RESULT_FILENAME}.mp4',
+            outfile=Path('..') / '..' / 'videos' / f'{RESULT_FILENAME}.mp4',
             dpi=DPI,
     ):
         update_frame(
